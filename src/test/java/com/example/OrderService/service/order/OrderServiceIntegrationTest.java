@@ -522,20 +522,20 @@ public class OrderServiceIntegrationTest {
 
     @Test
     void delete_shouldThrowOrderNotFound_whenOrderAlreadyDeleted() throws Exception{
-            OrderResponse orderResponse = createOrder();
+        OrderResponse orderResponse = createOrder();
 
-            assertFalse(orderResponse.getDeleted());
+        assertFalse(orderResponse.getDeleted());
 
-            mockMvc.perform(
-                            delete("/orders/" + orderResponse.getId())
-                                    .header("Authorization", "Bearer " + jwtServiceTest.generateToken("User", 1L, "ADMIN"))
-                    )
-                    .andExpect(status().isNoContent());
+        mockMvc.perform(
+                        delete("/orders/" + orderResponse.getId())
+                                .header("Authorization", "Bearer " + jwtServiceTest.generateToken("User", 1L, "ADMIN"))
+                )
+                .andExpect(status().isNoContent());
 
-            mockMvc.perform(
-                            get("/orders/" + orderResponse.getId())
-                                    .header("Authorization", "Bearer " + jwtServiceTest.generateToken("User", 1L, "ADMIN"))
-                    )
-                    .andExpect(status().isNotFound());
-        }
+        mockMvc.perform(
+                        get("/orders/" + orderResponse.getId())
+                                .header("Authorization", "Bearer " + jwtServiceTest.generateToken("User", 1L, "ADMIN"))
+                )
+                .andExpect(status().isNotFound());
+    }
 }
