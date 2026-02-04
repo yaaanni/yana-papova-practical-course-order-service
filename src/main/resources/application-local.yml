@@ -3,3 +3,10 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
+server:
+  port: 8082
+
+external:
+  user-service:
+    url: ${EXTERNAL_USER_SERVICE_URL}
