@@ -16,6 +16,7 @@ import com.example.OrderService.mapper.OrderItemMapper;
 import com.example.OrderService.mapper.OrderMapper;
 import com.example.OrderService.repository.ItemRepository;
 import com.example.OrderService.repository.OrderRepository;
+import com.example.OrderService.security.model.AuthUser;
 import com.example.OrderService.specification.OrderSpecifications;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
@@ -24,6 +25,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -38,15 +41,17 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
+    private final EntityManager entityManager;
     private final UserClient userClient;
     private final EntityManager entityManager;
 
-    public OrderResponse create(OrderRequest request) {
+    public OrderResponse create(OrderRequest request, AuthUser authUser) {
+        Long userId = authUser.getUserId();
 
-        UserResponse user = userClient.getUserById(request.getUserId());
+        UserResponse user = userClient.getUserById(userId);
 
         if (user.getName() == null) {
-            throw new UserNotFoundException(request.getUserId());
+            throw new UserNotFoundException(userId);
         }
 
         Order order = orderMapper.toEntity(request);
@@ -65,7 +70,7 @@ public class OrderService {
                 })
                 .toList();
 
-        order.setUserId(request.getUserId());
+        order.setUserId(userId);
         order.setItems(items);
 
         BigDecimal totalPrice = items.stream()
@@ -83,13 +88,17 @@ public class OrderService {
         return response;
     }
 
-    public OrderResponse getOrderById(Long id) {
+    public OrderResponse getOrderById(Long id, AuthUser authUser) {
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
         if (order.getDeleted()) {
             throw new OrderNotFoundException(id);
+        }
+
+        if (authUser.getRole().equals("ROLE_USER") && !authUser.getUserId().equals(order.getUserId())) {
+            throw new AccessDeniedException("You do not have permission to access these orders");
         }
 
         OrderResponse response = orderMapper.toResponse(order);
@@ -123,7 +132,10 @@ public class OrderService {
                 });
     }
 
-    public List<OrderResponse> getOrdersByUserId(Long id) {
+    public List<OrderResponse> getOrdersByUserId(Long id, AuthUser authUser) {
+        if (authUser.getRole().equals("ROLE_USER") && !authUser.getUserId().equals(id)) {
+            throw new AccessDeniedException("You do not have permission to access these orders");
+        }
 
         UserResponse user = userClient.getUserById(id);
 
@@ -167,13 +179,21 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
-
+    public void deleteById(Long id, AuthUser authUser) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
         if (order.getDeleted()) {
             throw new OrderNotFoundException(id);
+        }
+
+
+        if (authUser.getRole().equals("ROLE_USER") && !order.getUserId().equals(authUser.getUserId())) {
+            throw new AccessDeniedException("You do not have permission to access this order");
+        }
+
+        if (authUser.getRole().equals("ROLE_USER") && order.getStatus() != Status.CREATED) {
+            throw new AccessDeniedException("You do not have permission to access this order");
         }
 
         orderRepository.softDelete(id);

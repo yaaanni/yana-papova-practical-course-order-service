@@ -17,10 +17,6 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderRequest {
 
-    @NotNull(message = "User ID is required")
-    @PositiveOrZero
-    private Long userId;
-
     @NotEmpty(message = "Items list cannot be empty")
     private List<OrderItemRequest> items;
 }
