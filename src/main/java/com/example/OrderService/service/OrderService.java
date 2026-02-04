@@ -43,7 +43,6 @@ public class OrderService {
     private final OrderItemMapper orderItemMapper;
     private final EntityManager entityManager;
     private final UserClient userClient;
-    private final EntityManager entityManager;
 
     public OrderResponse create(OrderRequest request, AuthUser authUser) {
         Long userId = authUser.getUserId();
