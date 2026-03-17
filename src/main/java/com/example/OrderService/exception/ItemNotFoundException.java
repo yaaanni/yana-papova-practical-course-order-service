@@ -1,8 +1,8 @@
 package com.example.OrderService.exception;
 
 public class ItemNotFoundException extends RuntimeException {
-    public ItemNotFoundException(Long id) {
+    public ItemNotFoundException(String message) {
 
-        super("Item with id: " + id + " not found");
+        super(message);
     }
 }

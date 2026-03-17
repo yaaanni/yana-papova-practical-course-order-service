@@ -26,7 +26,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -50,7 +49,7 @@ public class OrderService {
         UserResponse user = userClient.getUserById(userId);
 
         if (user.getName() == null) {
-            throw new UserNotFoundException(userId);
+            throw new UserNotFoundException("User with id: " +  userId + " not found");
         }
 
         Order order = orderMapper.toEntity(request);
@@ -60,7 +59,7 @@ public class OrderService {
                     OrderItem orderItem = orderItemMapper.toEntity(itemRequest);
 
                     Item item = itemRepository.findById(itemRequest.getItemId())
-                            .orElseThrow(() -> new ItemNotFoundException(itemRequest.getItemId()));
+                            .orElseThrow(() -> new ItemNotFoundException("Item with id: " + itemRequest.getItemId() + " not found"));
 
                     orderItem.setOrder(order);
                     orderItem.setItem(item);
@@ -90,10 +89,10 @@ public class OrderService {
     public OrderResponse getOrderById(Long id, AuthUser authUser) {
 
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new OrderNotFoundException("Order with id: " + id + " not found"));
 
         if (order.getDeleted()) {
-            throw new OrderNotFoundException(id);
+            throw new OrderNotFoundException("Order with id: " + id + " not found");
         }
 
         if (authUser.getRole().equals("ROLE_USER") && !authUser.getUserId().equals(order.getUserId())) {
@@ -139,7 +138,7 @@ public class OrderService {
         UserResponse user = userClient.getUserById(id);
 
         if (user.getName() == null) {
-            throw new UserNotFoundException(id);
+            throw new UserNotFoundException("User with id: " + id + " not found");
         }
 
         return orderRepository.findAllByUserIdAndDeletedFalse(id)
@@ -156,10 +155,10 @@ public class OrderService {
     public OrderResponse update(OrderUpdateRequest request, Long id) {
 
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new OrderNotFoundException("Order with id: " + id + " not found"));
 
         if (order.getDeleted()) {
-            throw new OrderNotFoundException(id);
+            throw new OrderNotFoundException("Order with id: " + id + " not found");
         }
 
         orderMapper.updateOrderFromRequest(request, order);
@@ -180,10 +179,10 @@ public class OrderService {
     @Transactional
     public void deleteById(Long id, AuthUser authUser) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+                .orElseThrow(() -> new OrderNotFoundException("Order with id: " + id + " not found"));
 
         if (order.getDeleted()) {
-            throw new OrderNotFoundException(id);
+            throw new OrderNotFoundException("Order with id: " + id + " not found");
         }
 
 

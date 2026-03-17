@@ -25,7 +25,6 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public ResponseEntity<OrderResponse> create(@Valid @RequestBody OrderRequest request, @AuthenticationPrincipal AuthUser authUser) {
         OrderResponse response = orderService.create(request, authUser);
