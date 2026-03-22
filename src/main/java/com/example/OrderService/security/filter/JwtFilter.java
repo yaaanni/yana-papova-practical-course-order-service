@@ -31,6 +31,8 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        System.out.println("hello from order filter 1");
+
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
@@ -46,6 +48,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
         }
+
+        System.out.println("hello from order filter 2");
 
         filterChain.doFilter(request, response);
     }

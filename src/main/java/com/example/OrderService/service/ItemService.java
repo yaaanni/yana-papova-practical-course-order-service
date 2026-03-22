@@ -29,7 +29,7 @@ public class ItemService {
     public ItemResponse getItemById(Long id) {
 
         Item item = itemRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException(id));
+                .orElseThrow(() -> new ItemNotFoundException("Item with id: " + id + " not found"));
 
         return itemMapper.toResponse(item);
     }
@@ -38,7 +38,7 @@ public class ItemService {
     public void delete(Long id) {
 
         Item item = itemRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException(id));
+                .orElseThrow(() -> new ItemNotFoundException("Item with id: " + id + " not found"));
 
         itemRepository.delete(item);
     }
